@@ -27,9 +27,9 @@ let titleAngle = 0;
 
 const menus = createMenus(game, {
   newGame() {
+    // Nico steps off the bus onto the first mission's marker, so the story opens at once.
     game.newGame();
     startPlay();
-    game.hud.bigMessage('PALMERA KEYS', 'Walk into the pink marker to start the story', 'title');
   },
   continueGame() {
     const save = readSave();

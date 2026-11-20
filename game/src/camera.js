@@ -60,8 +60,8 @@ export function createCameraRig(camera, collision) {
       );
       fov = 62 + Math.min(18, speed * 0.4);
     } else {
-      const dist = aiming ? 3.4 : 4.8;
-      const side = aiming ? 0.95 : 0.5;
+      const dist = aiming ? 3.9 : 5.0;
+      const side = aiming ? 1.05 : 0.5;
       const rx = -Math.cos(rig.yaw);
       const rz = Math.sin(rig.yaw);
       focus = new THREE.Vector3(target.x + rx * side, 1.65 + target.y, target.z + rz * side);

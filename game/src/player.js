@@ -173,7 +173,18 @@ function updateDriving(game, dt, input) {
     exitVehicle(game);
     return;
   }
-  if ((input.pressed('KeyF') || input.pressed('Enter')) && player.enterCooldown <= 0 && Math.abs(v.speed) < 9) exitVehicle(game);
+  if ((input.pressed('KeyF') || input.pressed('Enter')) && player.enterCooldown <= 0) {
+    const speed = Math.abs(v.speed);
+    exitVehicle(game);
+    // Bailing out of a moving car: Nico hits the tarmac rolling.
+    if (speed > 9) {
+      a.vx = v.vx * 0.5;
+      a.vz = v.vz * 0.5;
+      a.vy = 3;
+      a.health -= Math.min(30, speed * 0.6);
+      game.audio.thud(a.x, a.z);
+    }
+  }
 }
 
 export function updatePlayer(game, dt, input, cam) {

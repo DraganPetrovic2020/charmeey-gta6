@@ -11,8 +11,8 @@ const PANTS = [0x264653, 0x3d405b, 0xd4c5a9, 0x6c757d, 0x1d3557, 0xa68a64, 0xf1f
 const HAIR = [0x1b1b1b, 0x3b2a1a, 0x6f4e37, 0xc9a66b, 0x8b8b8b, 0x2b1d0e];
 
 export function lookFor(role) {
-  if (role === 'player') return { shirt: 0x1fb5a8, sleeve: 0x1fb5a8, pants: 0xcdb891, skin: 0xd2a06d, hair: 0x1b1410, shoes: 0xf1f1f1, extra: null };
-  if (role === 'cop') return { shirt: 0x1d3a6e, pants: 0x14213d, skin: rand.pick(SKIN_TONES), hair: 0x1b1b1b, shoes: 0x111111, extra: 'cap' };
+  if (role === 'player') return { shirt: 0x1fb5a8, pattern: 'floral', sleeve: 0x1fb5a8, pants: 0xe8dcc0, skin: 0xc98f5e, hair: 0x1b1410, shoes: 0xf1f1f1, belt: 0x5a3b1e, extra: null };
+  if (role === 'cop') return { shirt: 0x1d3a6e, longSleeve: true, pants: 0x14213d, skin: rand.pick(SKIN_TONES), hair: 0x1b1b1b, shoes: 0x111111, extra: 'cap' };
   if (role === 'gang' || role === 'boss') return { shirt: role === 'boss' ? 0xf8f8f8 : 0xff7b2e, pants: role === 'boss' ? 0xf8f8f8 : 0x22223b, skin: rand.pick(SKIN_TONES), hair: rand.pick(HAIR), shoes: 0x111111, extra: role === 'boss' ? 'shades' : 'bandana' };
   if (role === 'mari') return { shirt: 0xff5d8f, pants: 0x2b2d42, skin: 0xc68642, hair: 0x2b1d0e, shoes: 0xffffff, extra: null };
   if (role === 'teo') return { shirt: 0xffd166, pants: 0x3d405b, skin: 0xe0ac69, hair: 0x1b1b1b, shoes: 0xef476f, extra: 'shades' };

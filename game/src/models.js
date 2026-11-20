@@ -31,9 +31,20 @@ function part(w, h, d, color, oy = 0) {
 
 export const SKIN_TONES = [0xf1c27d, 0xe0ac69, 0xc68642, 0x8d5524, 0xffdbac, 0x6b4226];
 
+const personMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.78 });
+
+function merged(build, material = personMaterial) {
+  const b = new MeshBuilder();
+  build(b);
+  const mesh = new THREE.Mesh(b.build(), material);
+  mesh.castShadow = true;
+  return mesh;
+}
+
 /**
  * A person facing +z, feet at y = 0. `look` sets shirt, pants, skin, hair and extras
- * ('cap' for police, 'shades', 'bandana' for gang members).
+ * ('cap' for police, 'shades', 'bandana' for gang members). Each body segment is one merged
+ * mesh with vertex colours, so a crowd stays cheap to draw.
  */
 export function buildPerson(look) {
   const group = new THREE.Group();
@@ -42,54 +53,105 @@ export function buildPerson(look) {
   const hips = new THREE.Group();
   hips.position.y = 0.95;
   body.add(hips);
-  const torso = part(0.52, 0.62, 0.3, look.shirt, 0.31);
+  const skin = look.skin;
+  // Tapered torso (a broad chest over a narrower waist), belt, neck and head in one mesh.
+  const torso = merged((b) => {
+    if (!look.pattern) {
+      b.cbox(0, 0.43, 0, 0.5, 0.38, 0.27, look.shirt);
+      b.cbox(0, 0.13, 0, 0.42, 0.26, 0.24, look.shirt);
+    }
+    b.cbox(0, 0.02, 0, 0.43, 0.08, 0.25, look.belt ?? 0x2b2116);
+    b.cbox(0, 0.66, 0, 0.11, 0.08, 0.11, skin);
+    b.cbox(0, 0.83, 0, 0.23, 0.27, 0.24, skin);
+    b.cbox(0, 0.98, 0, 0.25, 0.07, 0.26, look.hair);
+    b.cbox(0, 0.9, -0.11, 0.25, 0.16, 0.06, look.hair);
+    b.cbox(0, 0.86, 0.125, 0.15, 0.035, 0.01, 0x1a1a1a);
+    b.cbox(0, 0.81, 0.135, 0.04, 0.06, 0.04, skin);
+    if (look.extra === 'cap') {
+      b.cbox(0, 1.01, 0, 0.27, 0.08, 0.28, 0x14213d);
+      b.cbox(0, 0.97, 0.17, 0.25, 0.025, 0.12, 0x14213d);
+    }
+    if (look.extra === 'shades' || look.extra === 'cap') b.cbox(0, 0.86, 0.13, 0.22, 0.06, 0.02, 0x111111);
+    if (look.extra === 'bandana') b.cbox(0, 0.74, 0.01, 0.25, 0.1, 0.25, 0xff4d1a);
+  });
   hips.add(torso);
-  const belt = part(0.53, 0.08, 0.31, look.pants, 0.02);
-  hips.add(belt);
-  const neck = new THREE.Group();
-  neck.position.y = 0.64;
-  hips.add(neck);
-  const head = part(0.27, 0.3, 0.28, look.skin, 0.17);
-  neck.add(head);
-  const hair = part(0.29, 0.1, 0.3, look.hair, 0.35);
-  neck.add(hair);
-  if (look.extra === 'cap') {
-    neck.add(part(0.31, 0.09, 0.32, 0x14213d, 0.38));
-    const brim = part(0.3, 0.03, 0.14, 0x14213d, 0.34);
-    brim.position.z = 0.2;
-    neck.add(brim);
+  if (look.pattern) {
+    const shirt = new THREE.Mesh(boxGeometry(0.5, 0.38, 0.27, 0.43), patternMaterial(look.pattern, look.shirt));
+    const waist = new THREE.Mesh(boxGeometry(0.42, 0.26, 0.24, 0.13), shirt.material);
+    shirt.castShadow = waist.castShadow = true;
+    hips.add(shirt, waist);
   }
-  if (look.extra === 'shades' || look.extra === 'cap') {
-    const shades = part(0.25, 0.06, 0.02, 0x111111, 0.22);
-    shades.position.z = 0.145;
-    neck.add(shades);
-  }
-  if (look.extra === 'bandana') {
-    const band = part(0.28, 0.1, 0.29, 0xc1121f, 0.1);
-    band.position.z = 0.01;
-    neck.add(band);
-  }
-  const limb = (x, y, w, len, color, handColor) => {
+  // Arms: a short sleeve, a bare forearm (or a long sleeve) and a hand.
+  const arm = (x) => {
     const pivot = new THREE.Group();
-    pivot.position.set(x, y, 0);
-    const upper = part(w, len, w, color, -len / 2);
-    pivot.add(upper);
-    if (handColor !== undefined) pivot.add(part(w * 0.9, 0.12, w * 0.9, handColor, -len - 0.04));
+    pivot.position.set(x, 0.58, 0);
+    const sleeve = look.sleeve ?? look.shirt;
+    pivot.add(merged((b) => {
+      b.cbox(0, -0.12, 0, 0.15, 0.27, 0.15, sleeve);
+      b.cbox(0, -0.39, 0, 0.11, 0.3, 0.11, look.longSleeve ? sleeve : skin);
+      b.cbox(0, -0.58, 0, 0.11, 0.1, 0.12, skin);
+    }));
     return pivot;
   };
-  const armL = limb(0.34, 0.58, 0.14, 0.6, look.sleeve ?? look.shirt, look.skin);
-  const armR = limb(-0.34, 0.58, 0.14, 0.6, look.sleeve ?? look.shirt, look.skin);
+  const armL = arm(0.32);
+  const armR = arm(-0.32);
   hips.add(armL, armR);
-  const legL = limb(0.13, 0, 0.19, 0.9, look.pants);
-  const legR = limb(-0.13, 0, 0.19, 0.9, look.pants);
-  legL.add(part(0.2, 0.1, 0.3, look.shoes ?? 0x222222, -0.9).translateZ(0.05));
-  legR.add(part(0.2, 0.1, 0.3, look.shoes ?? 0x222222, -0.9).translateZ(0.05));
+  const leg = (x) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(x, 0, 0);
+    pivot.add(merged((b) => {
+      b.cbox(0, -0.24, 0, 0.19, 0.48, 0.2, look.pants);
+      b.cbox(0, -0.68, 0, 0.16, 0.42, 0.17, look.pants);
+      b.cbox(0, -0.9, 0.05, 0.17, 0.1, 0.29, look.shoes ?? 0x222222);
+    }));
+    return pivot;
+  };
+  const legL = leg(0.11);
+  const legR = leg(-0.11);
   hips.add(legL, legR);
-  const gun = part(0.07, 0.12, 0.34, 0x1b1b1b, 0);
-  gun.position.set(0, -0.66, 0.12);
+  const gun = part(0.07, 0.13, 0.36, 0x1b1b1b, 0);
+  gun.position.set(0, -0.6, 0.14);
   gun.visible = false;
   armR.add(gun);
-  return { group, body, hips, torso, neck, armL, armR, legL, legR, gun };
+  return { group, body, hips, torso, armL, armR, legL, legR, gun };
+}
+
+const patternCache = new Map();
+/** A shirt with a painted print (Nico's flowered shirt). */
+function patternMaterial(kind, base) {
+  const key = `${kind}|${base}`;
+  if (patternCache.has(key)) return patternCache.get(key);
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = `#${new THREE.Color(base).getHexString()}`;
+  ctx.fillRect(0, 0, 64, 64);
+  const flower = (x, y, r, color) => {
+    ctx.fillStyle = color;
+    for (let k = 0; k < 5; k += 1) {
+      const a = (k / 5) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, r * 0.75, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#ffe066';
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  ctx.fillStyle = '#0b7a5e';
+  for (const [x, y] of [[8, 40], [40, 10], [52, 46], [22, 58]]) ctx.fillRect(x - 6, y - 2, 12, 4);
+  flower(14, 14, 5, '#ff5d8f');
+  flower(44, 30, 6, '#ffffff');
+  flower(20, 46, 5, '#ff8a3d');
+  flower(56, 6, 4, '#ff5d8f');
+  flower(58, 58, 5, '#ffffff');
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.magFilter = THREE.NearestFilter;
+  const m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.8 });
+  patternCache.set(key, m);
+  return m;
 }
 
 /**

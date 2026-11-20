@@ -79,30 +79,57 @@ function titleScene(game, menus) {
 
 function combatScene(game) {
   game.newGame();
-  game.hour = 16.4;
+  game.hour = 16.2;
   game.progress.money = 9200;
   game.missions.forceStart(4);
   const a = game.player.actor;
-  a.x = 160;
-  a.z = nodeCoord(10) + 1;
-  a.heading = Math.PI / 2;
+  a.x = 372;
+  a.z = nodeCoord(10) + 1.5;
+  a.heading = -Math.PI / 2;
+  a.health = 74;
+  a.armor = 40;
   game.missions.skipTo(1);
+  // The Syndicate gunmen have spotted Nico and spread out across the dock road.
+  const spots = [[-13, -4], [-19, 5], [-25, -1], [-31, 7], [-38, -5], [-46, 2], [-55, 6]];
+  game.missions.state.stepState.targets.forEach((t, i) => {
+    t.x = a.x + spots[i][0];
+    t.z = a.z + spots[i][1];
+    t.brain.home = { x: t.x, z: t.z };
+    t.state = 'attack';
+  });
   giveWeapon(game.player, 2, 160);
   game.player.current = 2;
-  game.camRig.yaw = Math.PI / 2 + 0.12;
-  game.camRig.pitch = 0.08;
+  game.camRig.yaw = -Math.PI / 2 + 0.1;
+  game.camRig.pitch = 0.05;
   game.camRig.snap(a, null);
   fakeInput(game, { aim: true, fire: true });
-  run(game, 2.2, () => {
+  run(game, 0.75, () => {
     updatePlayer(game, STEP, game.input, game.camRig);
     game.combat.updatePlayer(STEP, true, false, true, game.camera);
     game.camRig.update(STEP, a, null, true);
   });
 }
 
+function mapScene(game, menus) {
+  game.newGame();
+  game.hour = 13.5;
+  game.progress.mission = 3;
+  game.progress.money = 7340;
+  game.progress.tapes = game.progress.tapes.map((t, i) => i % 3 === 0);
+  Object.assign(game.stats, { carsStolen: 23, driven: 41800, maxStars: 4, wasted: 2, busted: 1, kills: 31 });
+  const a = game.player.actor;
+  a.x = nodeCoord(4);
+  a.z = nodeCoord(5) + 20;
+  game.missions.refreshGiver();
+  run(game, 0.5);
+  game.camRig.snap(a, null);
+  menus.openPause();
+}
+
 export async function stageShot(name, game, menus) {
   if (name === 'title') titleScene(game, menus);
   else if (name === 'combat') combatScene(game);
+  else if (name === 'map') mapScene(game, menus);
   else chaseScene(game);
   if (name !== 'title') {
     menus.hideTitle();
