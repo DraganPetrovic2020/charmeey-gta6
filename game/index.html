@@ -3,16 +3,97 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Block Dodger</title>
-<style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #11141b; }
-  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-  /* Read aloud, never shown: the status line screen readers announce. */
-  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-</style>
+<title>Palmera Heat</title>
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<canvas id="game" aria-label="Block Dodger: move the paddle left and right to dodge falling blocks and catch coins"></canvas>
+<canvas id="game" aria-label="Palmera Heat: an open-world crime game in the sun-soaked city of Palmera Keys"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="topright">
+    <div id="clock">17:00</div>
+    <div id="weapon-row"><span id="weapon-name">Fists</span><span id="ammo"></span></div>
+    <div id="money">$0</div>
+    <div class="bar health"><div id="health-bar"></div></div>
+    <div class="bar armor"><div id="armor-bar"></div></div>
+    <div id="stars"><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i><i>&#9733;</i></div>
+  </div>
+  <div id="radar-wrap"><canvas id="radar" width="420" height="420"></canvas></div>
+  <div id="vehicle-info"><div id="district"></div><div id="car-name"></div><div id="speed"></div><div id="station"></div></div>
+  <div id="toasts"></div>
+  <div id="hint"></div>
+  <div id="crosshair"><i></i><i></i><i></i><i></i></div>
+  <div id="timer"></div>
+  <div id="counter"></div>
+  <div id="target-bar"><span id="target-label"></span><div class="track"><div id="target-fill"></div></div></div>
+  <div id="radio-sub"></div>
+  <div id="dialogue"><b id="speaker"></b><span id="line"></span></div>
+  <div id="objective"></div>
+  <div id="help">F enter/exit car &middot; LMB shoot &middot; RMB aim &middot; Esc menu</div>
+</div>
+<div id="bigmsg"><h1></h1><p></p></div>
+<div id="letterbox"><div></div><div></div></div>
+<div id="damage"></div>
+
+<div id="title-screen" class="screen">
+  <div class="sun"></div>
+  <div class="logo"><span class="logo-top">PALMERA</span><span class="logo-bottom">HEAT</span></div>
+  <p class="tagline">Five years inside. One sunset to settle the score.</p>
+  <nav id="title-menu">
+    <button data-action="continue">Continue</button>
+    <button data-action="new">New Game</button>
+    <button data-action="controls">Controls</button>
+    <button data-action="sound">Sound: On</button>
+  </nav>
+  <p id="save-info"></p>
+  <p class="credits">An original game set in the fictional Palmera Keys. Click to play &middot; mouse to look</p>
+</div>
+
+<div id="pause-screen" class="screen hidden">
+  <div class="pause-layout">
+    <div class="pause-side">
+      <h2>PAUSED</h2>
+      <nav id="pause-menu">
+        <button data-action="resume">Resume</button>
+        <button data-action="save">Save Game</button>
+        <button data-action="controls">Controls</button>
+        <button data-action="radio">Radio: On</button>
+        <button data-action="quit">Quit to Title</button>
+      </nav>
+      <div id="stats"></div>
+    </div>
+    <div class="pause-map"><canvas id="full-map" width="760" height="680"></canvas>
+      <div class="legend"><span style="--c:#ff4fa3">Mission</span><span style="--c:#5fe3ff">Safehouse</span><span style="--c:#ff8c42">Gun shop</span><span style="--c:#ffd23f">Respray</span><span style="--c:#ff4d6d">Hospital</span><span style="--c:#7fb2ff">Police</span><span style="--c:#ff5fd2">Mixtape</span></div>
+    </div>
+  </div>
+</div>
+
+<div id="controls-screen" class="screen hidden">
+  <h2>CONTROLS</h2>
+  <table>
+    <tr><td>W A S D</td><td>Walk / drive and steer</td></tr>
+    <tr><td>Mouse</td><td>Look around (click the game to capture the mouse)</td></tr>
+    <tr><td>Shift</td><td>Sprint</td></tr>
+    <tr><td>Space</td><td>Jump / handbrake</td></tr>
+    <tr><td>F or Enter</td><td>Get in or out of a car (works on occupied cars too)</td></tr>
+    <tr><td>Left mouse</td><td>Shoot / punch</td></tr>
+    <tr><td>Right mouse</td><td>Aim (locks on to nearby targets)</td></tr>
+    <tr><td>1 - 5, wheel</td><td>Choose weapon</td></tr>
+    <tr><td>R</td><td>Reload</td></tr>
+    <tr><td>E</td><td>Use shop, respray, safehouse</td></tr>
+    <tr><td>H / T</td><td>Horn / radio on-off</td></tr>
+    <tr><td>Esc or P</td><td>Pause, map and save</td></tr>
+  </table>
+  <button data-action="back">Back</button>
+</div>
+
+<div id="shop" class="screen hidden">
+  <h2>IRON COAST ARMS</h2>
+  <div id="shop-list"></div>
+  <p class="shop-help">Press a number to buy &middot; Esc to leave</p>
+</div>
+
+<div id="death-screen" class="hidden"><h1></h1><p></p></div>
 <p id="status" role="status" aria-live="polite"></p>
 <script type="module" src="./src/main.js"></script>
 </body>

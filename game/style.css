@@ -1,0 +1,132 @@
+/* Palmera Heat: the HUD, menus and screens drawn over the 3D view. */
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0a1a; font-family: "Trebuchet MS", "Segoe UI", sans-serif; color: #fff; user-select: none; }
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#game.dead { filter: grayscale(0.85) contrast(1.1) brightness(0.8); transition: filter 1.2s; }
+.hidden { display: none !important; }
+#status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+/* ------------------------------------------------------------------ HUD */
+#hud { position: fixed; inset: 0; pointer-events: none; }
+.outline { text-shadow: 0 0 3px #000, 2px 2px 0 #000, -1px -1px 0 #000; }
+#topright { position: absolute; top: 18px; right: 26px; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+#clock { font: bold 22px "Arial Black", Impact, sans-serif; color: #fff; text-shadow: 2px 2px 0 #000, 0 0 4px #000; }
+#weapon-row { display: flex; gap: 10px; align-items: baseline; font: bold 18px "Trebuchet MS", sans-serif; text-shadow: 2px 2px 0 #000; }
+#weapon-name { color: #ffe9b8; text-transform: uppercase; letter-spacing: 1px; }
+#ammo { color: #fff; font-size: 20px; }
+#money { font: 900 34px "Arial Black", Impact, sans-serif; color: #7dff8a; letter-spacing: 1px; text-shadow: 2px 2px 0 #0b3d17, -1px -1px 0 #0b3d17, 0 0 6px rgba(0,0,0,0.6); }
+#money.bump { animation: bump 0.4s; }
+@keyframes bump { 50% { transform: scale(1.15); color: #fff; } }
+.bar { width: 190px; height: 11px; background: rgba(0,0,0,0.55); border: 2px solid rgba(0,0,0,0.8); border-radius: 2px; }
+.bar > div { height: 100%; width: 100%; transition: width 0.2s; }
+.bar.health > div { background: linear-gradient(#ff8a8a, #e3243b); }
+.bar.armor > div { background: linear-gradient(#8fd3ff, #2b7fe0); }
+#stars { font-size: 34px; letter-spacing: 1px; line-height: 1; }
+#stars i { font-style: normal; color: rgba(255,255,255,0.18); text-shadow: 2px 2px 0 rgba(0,0,0,0.6); }
+#stars i.on { color: #ffd23f; text-shadow: 0 0 8px rgba(255,190,40,0.8), 2px 2px 0 #000; }
+#stars.flash i.on { animation: starflash 0.5s steps(2) infinite; }
+#stars.pulse { animation: pulse 0.6s; }
+@keyframes starflash { 50% { color: rgba(255,255,255,0.35); } }
+@keyframes pulse { 40% { transform: scale(1.35); } }
+
+#radar-wrap { position: absolute; left: 26px; bottom: 26px; width: 210px; height: 210px; border-radius: 50%; box-shadow: 0 0 0 4px rgba(0,0,0,0.75), 0 0 0 7px rgba(255,255,255,0.18), 0 6px 18px rgba(0,0,0,0.6); }
+#radar { width: 210px; height: 210px; border-radius: 50%; }
+
+#vehicle-info { position: absolute; right: 28px; bottom: 26px; text-align: right; text-shadow: 2px 2px 0 #000; }
+#district { font: italic 900 30px "Arial Black", Impact, sans-serif; color: #fff1d0; opacity: 0; transition: opacity 0.6s; text-shadow: 3px 3px 0 #000; }
+#district.show { opacity: 1; }
+#car-name { font: italic bold 20px "Trebuchet MS", sans-serif; color: #b7f7ff; }
+#speed { font: 900 40px "Arial Black", Impact, sans-serif; }
+#speed small { font-size: 16px; margin-left: 4px; }
+#station { font: bold 14px "Trebuchet MS", sans-serif; color: #e0b0ff; letter-spacing: 2px; }
+
+#toasts { position: absolute; left: 26px; top: 22px; display: flex; flex-direction: column; gap: 6px; }
+.toast { background: rgba(10,8,20,0.78); border-left: 4px solid #2ee6d6; padding: 8px 14px; font-weight: bold; font-size: 17px; max-width: 360px; animation: slidein 0.25s; }
+.toast.good { border-color: #7dff8a; }
+.toast.tape { border-color: #ff5fd2; }
+.toast.vehicle { border-color: #b7f7ff; font-style: italic; }
+.toast.bad { border-color: #ff4d6d; }
+@keyframes slidein { from { transform: translateX(-30px); opacity: 0; } }
+#hint { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); background: rgba(10,8,20,0.8); padding: 10px 16px; font-size: 17px; max-width: 320px; border-radius: 3px; display: none; }
+#hint.show { display: block; }
+#hint kbd { background: #fff; color: #111; padding: 0 6px; border-radius: 3px; font-weight: bold; }
+
+#crosshair { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; display: none; }
+#crosshair.show { display: block; }
+#crosshair i { position: absolute; background: #fff; box-shadow: 0 0 2px #000; }
+#crosshair i:nth-child(1) { left: 12px; top: 0; width: 2px; height: 8px; }
+#crosshair i:nth-child(2) { left: 12px; bottom: 0; width: 2px; height: 8px; }
+#crosshair i:nth-child(3) { top: 12px; left: 0; width: 8px; height: 2px; }
+#crosshair i:nth-child(4) { top: 12px; right: 0; width: 8px; height: 2px; }
+#crosshair.locked i { background: #ff3b3b; }
+
+#timer { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font: 900 40px "Arial Black", Impact, sans-serif; text-shadow: 3px 3px 0 #000; }
+#timer.low { color: #ff5c5c; }
+#counter { position: absolute; top: 70px; left: 50%; transform: translateX(-50%); font: bold 22px "Trebuchet MS", sans-serif; color: #ffb3b3; text-shadow: 2px 2px 0 #000; }
+#target-bar { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); text-align: center; display: none; }
+#target-bar.show { display: block; }
+#target-label { font: bold 15px "Trebuchet MS", sans-serif; text-shadow: 2px 2px 0 #000; text-transform: uppercase; letter-spacing: 2px; }
+#target-bar .track { width: 260px; height: 10px; background: rgba(0,0,0,0.6); border: 2px solid #000; margin-top: 4px; }
+#target-fill { height: 100%; background: #ff3b3b; }
+
+#objective { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%); font: bold 22px "Trebuchet MS", sans-serif; text-shadow: 2px 2px 0 #000, 0 0 6px #000; text-align: center; max-width: 60vw; }
+#objective em { color: #ffd23f; font-style: normal; }
+#dialogue { position: absolute; left: 50%; bottom: 78px; transform: translateX(-50%); font-size: 23px; text-align: center; max-width: 64vw; text-shadow: 2px 2px 0 #000, 0 0 8px #000; display: none; z-index: 6; }
+#dialogue.show { display: block; }
+#dialogue b { margin-right: 8px; }
+#radio-sub { position: absolute; left: 50%; bottom: 118px; transform: translateX(-50%); font-size: 19px; text-align: center; text-shadow: 2px 2px 0 #000; }
+#help { position: absolute; left: 252px; bottom: 30px; font-size: 13px; color: rgba(255,255,255,0.7); text-shadow: 1px 1px 0 #000; }
+
+#bigmsg { position: fixed; left: 0; right: 0; top: 30%; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.4s; z-index: 7; }
+#bigmsg.show { opacity: 1; }
+#bigmsg h1 { margin: 0; font: italic 900 64px "Arial Black", Impact, sans-serif; letter-spacing: 2px; text-shadow: 4px 4px 0 #000, 0 0 20px rgba(0,0,0,0.6); }
+#bigmsg p { margin: 6px 0 0; font: bold 26px "Trebuchet MS", sans-serif; text-shadow: 2px 2px 0 #000; }
+#bigmsg.gold h1 { color: #ffd23f; }
+#bigmsg.red h1 { color: #ff4d6d; }
+#bigmsg.title h1 { background: linear-gradient(#fff3a8, #ff8a3d 55%, #ff3d8b); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(3px 3px 0 #000); text-shadow: none; }
+
+#letterbox div { position: fixed; left: 0; right: 0; height: 0; background: #000; transition: height 0.5s; z-index: 5; }
+#letterbox div:first-child { top: 0; }
+#letterbox div:last-child { bottom: 0; }
+#letterbox.on div { height: 11vh; }
+#damage { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 160px 40px rgba(220,0,30,0.8); opacity: 0; transition: opacity 0.35s; }
+#damage.hit { opacity: 1; transition: none; }
+
+/* ---------------------------------------------------------------- screens */
+.screen { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.screen button { pointer-events: auto; display: block; width: 280px; margin: 8px auto; padding: 12px 18px; font: italic 900 22px "Arial Black", Impact, sans-serif; letter-spacing: 1px; color: #fff; background: rgba(16,10,36,0.7); border: 2px solid rgba(255,255,255,0.25); border-radius: 4px; cursor: pointer; text-transform: uppercase; transition: background 0.15s, transform 0.15s; }
+.screen button:hover, .screen button.focus { background: linear-gradient(90deg, #ff3d8b, #ff8a3d); border-color: #fff3a8; transform: scale(1.04); }
+.screen button:disabled { opacity: 0.35; pointer-events: none; }
+#title-screen { background: linear-gradient(180deg, rgba(20,8,48,0.15) 0%, rgba(20,8,48,0.0) 40%, rgba(12,4,30,0.75) 100%); }
+#title-screen .sun { position: absolute; top: 9vh; width: 300px; height: 300px; border-radius: 50%; background: linear-gradient(#fff3a8, #ff9a3d 50%, #ff3d8b); opacity: 0.85; -webkit-mask: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 32px); mask: repeating-linear-gradient(180deg, #000 0 26px, transparent 26px 32px); filter: blur(0.3px); }
+.logo { position: relative; display: flex; flex-direction: column; align-items: center; margin-top: 6vh; transform: rotate(-4deg); }
+.logo span { font: italic 900 108px/0.9 "Arial Black", Impact, sans-serif; letter-spacing: 4px; }
+.logo-top { color: #fff; text-shadow: 5px 5px 0 #ff3d8b, 10px 10px 0 rgba(0,0,0,0.5); }
+.logo-bottom { background: linear-gradient(#fff3a8, #ff8a3d 50%, #ff3d8b); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(5px 5px 0 #2a0f4d) drop-shadow(0 0 18px rgba(255,120,80,0.6)); font-size: 150px !important; }
+.tagline { font: italic bold 22px "Trebuchet MS", sans-serif; color: #fff1d0; text-shadow: 2px 2px 0 #000; margin: 18px 0 18px; }
+#save-info { font-size: 15px; color: #ffd9f0; text-shadow: 1px 1px 0 #000; min-height: 18px; }
+.credits { position: absolute; bottom: 14px; font-size: 13px; color: rgba(255,255,255,0.65); }
+
+#pause-screen { background: rgba(8,5,20,0.82); }
+.pause-layout { display: flex; gap: 34px; align-items: center; }
+.pause-side h2, #controls-screen h2, #shop h2 { font: italic 900 52px "Arial Black", Impact, sans-serif; margin: 0 0 12px; background: linear-gradient(#fff3a8, #ff8a3d 55%, #ff3d8b); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; }
+#stats { margin-top: 16px; font-size: 15px; line-height: 1.6; color: #e9e2ff; background: rgba(255,255,255,0.06); padding: 10px 16px; border-radius: 4px; }
+#stats b { color: #ffd23f; float: right; margin-left: 24px; }
+.pause-map canvas { width: 760px; height: 680px; max-width: 60vw; max-height: 80vh; object-fit: contain; border: 3px solid rgba(255,255,255,0.2); border-radius: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; font-size: 14px; margin-top: 6px; }
+.legend span::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: var(--c); margin-right: 6px; border: 1px solid #000; }
+#controls-screen { background: rgba(8,5,20,0.92); z-index: 12; }
+#controls-screen table { font-size: 18px; border-collapse: collapse; margin-bottom: 18px; }
+#controls-screen td { padding: 6px 18px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+#controls-screen td:first-child { font-weight: bold; color: #ffd23f; text-align: right; }
+#shop { background: rgba(20,10,6,0.86); }
+#shop-list { display: grid; grid-template-columns: auto auto auto; gap: 8px 26px; font-size: 20px; align-items: center; }
+#shop-list .k { background: #ffd23f; color: #000; font-weight: bold; border-radius: 3px; padding: 0 8px; }
+#shop-list .price { color: #7dff8a; font-weight: bold; text-align: right; }
+#shop-list .owned { color: #aaa; }
+.shop-help { color: #ccc; margin-top: 20px; }
+
+#death-screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 8; }
+#death-screen h1 { font: italic 900 110px "Arial Black", Impact, sans-serif; margin: 0; color: #e3243b; text-shadow: 5px 5px 0 #000; animation: drop 0.6s ease-out; }
+#death-screen.busted h1 { color: #4f8bff; }
+#death-screen p { font: bold 24px "Trebuchet MS", sans-serif; text-shadow: 2px 2px 0 #000; }
+@keyframes drop { from { transform: scale(2.2); opacity: 0; } }
