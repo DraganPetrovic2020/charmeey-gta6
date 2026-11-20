@@ -60,7 +60,7 @@ async function js(expression: string): Promise<any> {
   if (r.result?.exceptionDetails) throw new Error(`${expression}: ${r.result.exceptionDetails.exception?.description}`);
   return r.result?.result?.value;
 }
-const KEYS: Record<string, number> = { KeyW: 87, KeyA: 65, KeyS: 83, KeyD: 68, KeyF: 70, Space: 32, KeyE: 69, Escape: 27, Digit2: 50 };
+const KEYS: Record<string, number> = { KeyV: 86, KeyW: 87, KeyA: 65, KeyS: 83, KeyD: 68, KeyF: 70, Space: 32, KeyE: 69, Escape: 27, Digit2: 50 };
 async function key(code: string, type: 'keyDown' | 'keyUp') {
   await send('Input.dispatchKeyEvent', { type, code, key: code.replace(/^Key|^Digit/, '').toLowerCase(), windowsVirtualKeyCode: KEYS[code] });
 }
@@ -158,6 +158,18 @@ await js(`(async () => { const g = __game; const a = g.player.actor; g.police.se
 for (let i = 0; i < 12 && !(await js(`!!__game.death`)); i += 1) await waitGame(0.5);
 check('player can be busted', await js(`!!__game.death && __game.death.kind === 'busted'`));
 await waitGame(2.5);
+
+// Vigilante: steal a cruiser, press V, wreck the suspect.
+await js(`(async () => { const g = __game; const a = g.player.actor; const { spawnVehicle } = await import('./src/vehicles.js'); const v = spawnVehicle(g, 'cruiser', a.x + 3, a.z, 0, { driver: null }); (await import('./src/player.js')).enterVehicle(g, v); })()`);
+await tap('KeyV');
+await waitGame(0.5);
+check('V starts Vigilante in a cruiser', await js(`__game.activities.active`));
+await js(`(async () => { const g = __game; const t = g.vehicles.find((v) => v.tag === 'suspect'); (await import('./src/vehicles.js')).explodeVehicle(g, t); })()`);
+await waitGame(4);
+check('wrecking the suspect clears a level', await js(`__game.activities.active && __game.vehicles.some((v) => v.tag === 'suspect' && !v.dead)`));
+await js(`(async () => { (await import('./src/player.js')).exitVehicle(__game); })()`);
+await waitGame(0.3);
+check('leaving the cruiser ends Vigilante', !(await js(`__game.activities.active`)));
 
 // The story: start every mission and push each step to done.
 const story = await js(`(async () => {

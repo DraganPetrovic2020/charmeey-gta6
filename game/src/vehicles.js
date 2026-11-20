@@ -5,6 +5,7 @@ import * as THREE from '../vendor/three.min.js';
 import { VEHICLES } from './config.js';
 import { buildVehicleModel } from './models.js';
 import { rand } from './rng.js';
+import { groundHeight } from './citymap.js';
 
 let nextId = 1;
 const charred = new THREE.MeshStandardMaterial({ color: 0x1c1a19, roughness: 1 });
@@ -225,7 +226,7 @@ function collidePair(game, a, b) {
 
 export function syncVehicleMesh(v, dt) {
   const g = v.model.group;
-  g.position.set(v.x, 0, v.z);
+  g.position.set(v.x, groundHeight(v.x), v.z);
   g.rotation.y = v.heading;
   const lean = THREE.MathUtils.clamp((v.slip ?? 0) * 0.008 * Math.sign(v.steer), -0.06, 0.06);
   v.model.body.rotation.z = lean;

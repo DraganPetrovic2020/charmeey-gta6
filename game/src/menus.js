@@ -67,6 +67,7 @@ export function createMenus(game, handlers) {
       ['Cars stolen', s.carsStolen],
       ['Distance driven', `${(s.driven / 1000).toFixed(1)} km`],
       ['Highest wanted level', '★'.repeat(s.maxStars) || '-'],
+      ['Vigilante best level', s.vigilanteBest ?? 0],
       ['Wasted / Busted', `${s.wasted} / ${s.busted}`],
     ];
     $('stats').innerHTML = rows.map(([k, v]) => `<div>${k}<b>${v}</b></div>`).join('');

@@ -39,14 +39,14 @@ function chaseScene(game) {
   car.heading = 0;
   enterVehicle(game, car);
   game.missions.skipTo(3);
-  game.police.setStars(3);
-  for (const [dx, dz] of [[0, -13], [7.2, -21], [0, -33]]) {
+  game.police.setStars(4);
+  for (const [dx, dz] of [[0, -11], [3.6, -17], [-3.6, -25]]) {
     const cop = spawnVehicle(game, 'cruiser', x + dx, z + dz, 0, { driver: 'police' });
     cop.police = 'chase';
     cop.persistent = true;
     cop.ai = { route: [], routeTimer: 0 };
     cop.vx = 0;
-    cop.vz = 33;
+    cop.vz = 41;
   }
   // Evening traffic on the boulevard, both ways.
   for (const [lane, dz, model] of [[-1, 90, 'cab'], [-1, 160, 'brava'], [1, 120, 'mule'], [-1, 230, 'cabana'], [1, 210, 'brava']]) {
@@ -56,6 +56,13 @@ function chaseScene(game) {
     startCruising(t, lane > 0 ? { i: 10, j: 6 } : { i: 10, j: 2 }, lane > 0 ? { i: 10, j: 5 } : { i: 10, j: 3 });
     t.vz = lane > 0 ? -12 : 10;
   }
+  // The helicopter has already joined the chase, hanging over the cruisers.
+  const heli = game.police.heli;
+  heli.group.visible = true;
+  heli.angle = -Math.PI / 2 - 0.25;
+  heli.x = x + Math.cos(heli.angle) * 38;
+  heli.z = z + Math.sin(heli.angle) * 38;
+  heli.y = 24;
   car.vz = 34;
   run(game, 1.6, () => steerToward(car, x, car.z + 30, 42, STEP));
   // The player has swung the camera round with the mouse to watch the cruisers close in.

@@ -257,11 +257,11 @@ export function createPolice(game) {
     const p = game.player.actor;
     if (want) {
       heli.angle += dt * 0.35;
-      const tx = p.x + Math.cos(heli.angle) * 28;
-      const tz = p.z + Math.sin(heli.angle) * 28;
+      const tx = p.x + Math.cos(heli.angle) * 38;
+      const tz = p.z + Math.sin(heli.angle) * 38;
       heli.x += (tx - heli.x) * Math.min(1, dt * 0.8);
       heli.z += (tz - heli.z) * Math.min(1, dt * 0.8);
-      heli.y += (34 - heli.y) * Math.min(1, dt * 0.5);
+      heli.y += (24 - heli.y) * Math.min(1, dt * 0.5);
       heli.cooldown -= dt;
       if (heli.cooldown <= 0 && wanted.stars >= 5) {
         heli.cooldown = 0.25;

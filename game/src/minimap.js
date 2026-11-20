@@ -98,7 +98,7 @@ export function createMinimap(canvas, game) {
       if (a.role === 'cop' && !a.dead && a.state !== 'patrol') out.push({ x: a.x, z: a.z, color: flash ? '#3f7bff' : '#ff3355', small: true });
     }
     if (game.police.heli.group.visible) out.push({ x: game.police.heli.x, z: game.police.heli.z, color: '#3f7bff', label: 'H', cop: true });
-    return out.concat(game.missions.blips());
+    return out.concat(game.missions.blips(), game.activities.blips());
   }
 
   function drawBlip(b, x, y, size) {

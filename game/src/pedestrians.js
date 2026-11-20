@@ -18,7 +18,7 @@ function ringCorners(block) {
 function blockNear(game, x, z) {
   let best = null;
   let bestD = Infinity;
-  for (const b of game.map.blocks) {
+  for (const b of game.map.walkAreas) {
     const cx = (b.x0 + b.x1) / 2;
     const cz = (b.z0 + b.z1) / 2;
     const d = Math.hypot(cx - x, cz - z);
@@ -51,7 +51,7 @@ function assignStroll(a, block) {
 export function spawnPedestrian(game, minDist = 22, maxDist = POPULATION.spawnFar * 0.8) {
   const p = game.player.actor;
   for (let tries = 0; tries < 12; tries += 1) {
-    const block = rand.pick(game.map.blocks);
+    const block = rand.pick(game.map.walkAreas);
     const corners = ringCorners(block);
     const k = rand.int(0, 3);
     const c0 = corners[k];

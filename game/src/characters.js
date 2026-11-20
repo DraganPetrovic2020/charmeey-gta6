@@ -5,6 +5,7 @@ import { PLAYER } from './config.js';
 import { buildPerson, posePerson, SKIN_TONES } from './models.js';
 import { rand } from './rng.js';
 import { vehicleCircles } from './vehicles.js';
+import { groundHeight } from './citymap.js';
 
 const SHIRTS = [0xf4a261, 0x2a9d8f, 0xe76f51, 0xffffff, 0x8ecae6, 0xffb703, 0xcdb4db, 0x90be6d, 0xf28482, 0x6d6875, 0xe9edc9];
 const PANTS = [0x264653, 0x3d405b, 0xd4c5a9, 0x6c757d, 0x1d3557, 0xa68a64, 0xf1faee];
@@ -167,7 +168,7 @@ export function checkVehicleHits(game) {
 
 export function syncActorMesh(a, dt) {
   const g = a.model.group;
-  g.position.set(a.x, a.y, a.z);
+  g.position.set(a.x, a.y + groundHeight(a.x), a.z);
   g.rotation.y = a.heading;
   const stride = Math.min(1, a.moveSpeed / 5);
   a.phase += dt * (3 + a.moveSpeed * 1.5);

@@ -29,6 +29,11 @@ export function nearestNode(x, z) {
   return { i: clamp(x), j: clamp(z) };
 }
 
+/** Height of the ground: flat city, with the beach sloping down to the water. */
+export function groundHeight(x) {
+  return x > CITY.size + 2 ? -((x - CITY.size - 2) / (CITY.beach - 2)) * 0.9 : 0;
+}
+
 export function districtOf(bi, bj) {
   if (bi >= 8) return 'beach';
   if (bj >= 7 && bi <= 4) return 'harbor';
@@ -147,7 +152,10 @@ export function createCityMap(seed = 7) {
     if (rng.chance(0.6)) containers.push({ x, z: CITY.size + 10, w: 6, d: 2.6, h: 2.6 * rng.int(1, 3), color: rng.pick([0xc0392b, 0x2471a3, 0xd68910, 0x1e8449, 0x7d3c98, 0x839192]), rot: 0 });
   }
 
-  return { blocks, buildings, palms, lamps, containers, pools, places };
+  // Where people walk: every block's sidewalk, plus a loop of the beach (promenade and shoreline).
+  const beachWalk = { x0: CITY.size + 5, z0: 30, x1: CITY.size + CITY.beach - 22, z1: CITY.size - 30, district: 'beach', walkOnly: true };
+  const walkAreas = [...blocks, beachWalk, beachWalk, beachWalk];
+  return { blocks, buildings, palms, lamps, containers, pools, places, walkAreas };
 }
 
 function addBuilding(buildings, x0, z0, x1, z1, h, color, style, name = null) {

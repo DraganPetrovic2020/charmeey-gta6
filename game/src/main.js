@@ -169,6 +169,7 @@ function playFrame(dt) {
     updatePlayer(game, dt, input, game.camRig);
     game.missions.update(dt, false);
     game.places.update(dt, input);
+    game.activities.update(dt, input);
   }
   simulate(dt, controls);
   const aiming = controls && !player.vehicle && player.current !== 0 && (input.mouse.aim || input.mouse.fire);

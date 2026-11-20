@@ -19,6 +19,7 @@ import { createPedestrians } from './pedestrians.js';
 import { createPickups } from './pickups.js';
 import { createMissions } from './missions.js';
 import { createPlaces } from './places.js';
+import { createActivities } from './activities.js';
 import { createEvents } from './events.js';
 import { createCameraRig } from './camera.js';
 import { createPlayer, exitVehicle } from './player.js';
@@ -76,6 +77,7 @@ export function createGame(canvas, input) {
   game.pickups = createPickups(game);
   game.missions = createMissions(game);
   game.places = createPlaces(game);
+  game.activities = createActivities(game);
   game.minimap = createMinimap(document.getElementById('radar'), game);
 
   game.addMoney = (amount, toast = true) => {
@@ -126,6 +128,7 @@ export function createGame(canvas, input) {
     game.police.clear();
     game.police.wanted.heat = 0;
     game.missions.reset();
+    game.activities.stop('');
     game.hud.objective('');
   }
 
