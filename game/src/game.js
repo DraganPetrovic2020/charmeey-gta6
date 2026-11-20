@@ -80,6 +80,20 @@ export function createGame(canvas, input) {
   game.activities = createActivities(game);
   game.minimap = createMinimap(document.getElementById('radar'), game);
 
+  // Headlights for the player's car after dark.
+  const headlight = new THREE.SpotLight(0xfff1d0, 0, 60, 0.5, 0.6, 1.2);
+  scene.add(headlight, headlight.target);
+  game.updateHeadlight = () => {
+    const v = game.player?.vehicle;
+    const on = !!v && sky.state.night > 0.35;
+    headlight.intensity = on ? 220 : 0;
+    if (!on) return;
+    const fx = Math.sin(v.heading);
+    const fz = Math.cos(v.heading);
+    headlight.position.set(v.x + fx * 2.2, 1.0, v.z + fz * 2.2);
+    headlight.target.position.set(v.x + fx * 20, 0, v.z + fz * 20);
+  };
+
   game.addMoney = (amount, toast = true) => {
     game.progress.money = Math.max(0, game.progress.money + amount);
     game.hud.bumpMoney();
@@ -239,6 +253,7 @@ export function createGame(canvas, input) {
     sky.update(game.hour, new THREE.Vector3(a.x, 0, a.z));
     updateNightLights();
     setPoliceFlash(game.time);
+    game.updateHeadlight();
     city.water.material.map.offset.x = (game.time * 0.004) % 1;
     city.water.material.map.offset.y = (game.time * 0.002) % 1;
     game.audio.setListener(a.x, a.z);

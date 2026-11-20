@@ -74,7 +74,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0d0a1a; fon
 #dialogue.show { display: block; }
 #dialogue b { margin-right: 8px; }
 #radio-sub { position: absolute; left: 50%; bottom: 118px; transform: translateX(-50%); font-size: 19px; text-align: center; text-shadow: 2px 2px 0 #000; }
-#help { position: absolute; left: 252px; bottom: 30px; font-size: 13px; color: rgba(255,255,255,0.7); text-shadow: 1px 1px 0 #000; }
+#help { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); font-size: 13px; color: rgba(255,255,255,0.75); text-shadow: 1px 1px 0 #000; }
 
 #bigmsg { position: fixed; left: 0; right: 0; top: 30%; text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.4s; z-index: 7; }
 #bigmsg.show { opacity: 1; }

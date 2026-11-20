@@ -7,6 +7,7 @@ import { enterVehicle, giveWeapon } from './player.js';
 import { spawnVehicle } from './vehicles.js';
 import { startCruising, steerToward } from './traffic.js';
 import { updatePlayer } from './player.js';
+import { writeSave } from './save.js';
 
 const STEP = 1 / 60;
 
@@ -73,6 +74,11 @@ function chaseScene(game) {
 }
 
 function titleScene(game, menus) {
+  // A game saved earlier, so the title offers Continue.
+  game.newGame();
+  game.progress.mission = 3;
+  game.progress.money = 18450;
+  writeSave(game);
   game.resetWorld(CITY.size + 12, 470, Math.PI);
   game.player.actor.hidden = true;
   game.hour = 17.7;
