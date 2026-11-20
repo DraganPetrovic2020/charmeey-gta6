@@ -155,7 +155,8 @@ export function createHud() {
         el.speed.textContent = '';
         el.station.textContent = '';
       }
-      const armed = !v && player.current !== 0 && !a.dead;
+      const driveBy = v && (player.current === 1 || player.current === 2);
+      const armed = (!v || driveBy) && player.current !== 0 && !a.dead;
       el.crosshair.classList.toggle('show', armed && (game.input.mouse.aim || game.input.mouse.fire));
       el.crosshair.classList.toggle('locked', !!game.combat.state.aimTarget);
 

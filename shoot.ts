@@ -15,9 +15,9 @@ import { fileURLToPath } from 'node:url';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const root = resolve(join(here, 'game'));
-const outDir = join(here, 'screenshots');
+const outDir = process.env.OUT ?? join(here, 'screenshots');
 const filter = process.argv[2] ?? '';
-const shots: { name: string; query: string; quality?: number }[] = JSON.parse(readFileSync(join(here, 'shots.json'), 'utf8'));
+const shots: { name: string; query: string; quality?: number }[] = JSON.parse(readFileSync(process.env.SHOTS ?? join(here, 'shots.json'), 'utf8'));
 const WIDTH = 1280;
 const HEIGHT = 720;
 

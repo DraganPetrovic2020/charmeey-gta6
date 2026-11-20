@@ -194,8 +194,9 @@ export function createGame(canvas, input) {
 
   function updateNightLights() {
     const night = sky.state.night;
-    for (const m of city.nightMaterials) m.emissiveIntensity = night * 1.1 + (m.map && m.emissiveMap === m.map ? 0.25 : 0);
+    for (const m of city.nightMaterials) m.emissiveIntensity = m.emissiveMap === m.map ? 0.12 + night * 0.8 : night * 0.55;
     city.lampMaterial.emissiveIntensity = night * 4;
+    city.poolMaterial.opacity = Math.max(0, night - 0.15) * 0.9;
     setVehicleNightLights(night);
   }
 

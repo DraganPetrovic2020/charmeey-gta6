@@ -70,7 +70,7 @@ function facade(style, seed) {
         ctx.fillRect(x, y + cell - 6, cell, 4);
       }
       if (rng.chance(style === 'tower' ? 0.35 : 0.45)) {
-        const warm = rng.pick(['#ffd58a', '#ffe9b8', '#fff3d6', '#bfe3ff']);
+        const warm = rng.pick(['#e8a54a', '#f2c070', '#d98e3a', '#8fb8e0']);
         nctx.fillStyle = warm;
         nctx.fillRect(wx, wy, ww, wh);
         ctx.fillStyle = 'rgba(255,220,150,0.12)';

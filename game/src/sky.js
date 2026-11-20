@@ -5,16 +5,16 @@ import * as THREE from '../vendor/three.min.js';
 
 /** Key colours through the day: [hour, zenith, horizon, sun colour, sun intensity, ambient]. */
 const KEYS = [
-  [0, 0x050b1e, 0x1b2550, 0x8fa8ff, 0.25, 0.32],
-  [5, 0x0d1735, 0x3a3d6e, 0x9fb0ff, 0.25, 0.34],
+  [0, 0x07102a, 0x22306a, 0x9fb4ff, 0.5, 0.55],
+  [5, 0x0d1735, 0x3a3d6e, 0x9fb0ff, 0.5, 0.55],
   [6.3, 0x3f5a9a, 0xffa27a, 0xffb27a, 1.2, 0.55],
   [8, 0x3d8bdc, 0xbfe3ff, 0xfff0d8, 2.6, 0.85],
   [13, 0x2f7fe0, 0xcdeaff, 0xffffff, 3.1, 0.95],
   [16.5, 0x3a83d6, 0xffe0b0, 0xffe3b5, 2.8, 0.85],
   [18.2, 0x3f4f9e, 0xff8a5c, 0xff9a5a, 2.1, 0.7],
   [19.3, 0x2a2a66, 0xff5e78, 0xff7a6a, 0.9, 0.5],
-  [20.5, 0x0b1230, 0x2c2a5e, 0x8fa8ff, 0.3, 0.36],
-  [24, 0x050b1e, 0x1b2550, 0x8fa8ff, 0.25, 0.32],
+  [20.5, 0x0b1230, 0x2c2a5e, 0x9fb4ff, 0.5, 0.55],
+  [24, 0x07102a, 0x22306a, 0x9fb4ff, 0.5, 0.55],
 ];
 
 const vertexShader = `
@@ -117,7 +117,7 @@ export function createSky(scene, renderer) {
     uniforms.horizon.value.copy(k.horizon);
     uniforms.sunColor.value.copy(k.sun);
     uniforms.sunDir.value.copy(dir);
-    state.night = THREE.MathUtils.clamp(1 - (k.intensity - 0.3) / 1.4, 0, 1);
+    state.night = THREE.MathUtils.clamp(1 - (k.intensity - 0.5) / 1.3, 0, 1);
     uniforms.night.value = state.night;
     scene.fog.color.copy(k.horizon).lerp(k.zenith, 0.25);
     dome.position.copy(focus);

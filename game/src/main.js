@@ -80,7 +80,10 @@ document.addEventListener('pointerlockchange', () => {
   if (!document.pointerLockElement && screen === 'play' && !menus.state.shopOpen && !game.missions.inCutscene && !game.death) openPause();
 });
 
+let pausedAt = 0;
 function openPause() {
+  if (screen === 'pause') return;
+  pausedAt = performance.now();
   screen = 'pause';
   input.releasePointer();
   menus.openPause();
@@ -179,7 +182,8 @@ function frame(now) {
   last = now;
   if (screen === 'title') titleFrame(dt);
   else if (screen === 'play') playFrame(dt);
-  if (screen === 'pause' && (input.pressed('Escape') || input.pressed('KeyP'))) {
+  // Esc both releases the mouse and arrives as a key press: ignore it just after pausing.
+  if (screen === 'pause' && performance.now() - pausedAt > 350 && (input.pressed('Escape') || input.pressed('KeyP'))) {
     if (menus.controlsOpen) menus.closeControls();
     else {
       menus.closePause();

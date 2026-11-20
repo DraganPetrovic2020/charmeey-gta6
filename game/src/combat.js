@@ -119,7 +119,10 @@ export function createCombat(game) {
     state.cooldown -= dt;
     const w = WEAPONS[player.current];
     state.aimTarget = aiming && !player.vehicle && !w.melee ? findAimTarget(camera, w.range) : null;
-    if (player.vehicle || a.dead) return;
+    if (a.dead) return;
+    // From a car only one-handed guns work: a drive-by out of the window.
+    const car = player.vehicle;
+    if (car && !(w.id === 'pistol' || w.id === 'smg')) return;
     const wantsFire = w.id === 'pistol' || w.id === 'shotgun' ? firePressed || (fireHeld && state.cooldown < -0.15) : fireHeld;
     if (!wantsFire || state.cooldown > 0) return;
     if (w.melee) {
@@ -135,7 +138,7 @@ export function createCombat(game) {
     state.cooldown = 1 / w.rate;
     player.clip[player.current] -= 1;
     state.lastShot = game.time;
-    const hand = handPosition(a);
+    const hand = car ? { x: car.x, y: car.spec.height + 0.4, z: car.z } : handPosition(a);
     camera.getWorldDirection(tmpDir);
     const origin = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
     let base = tmpDir.clone();
@@ -153,7 +156,7 @@ export function createCombat(game) {
       d.y += rand.range(-w.spread, w.spread) * 0.6;
       d.z += rand.range(-w.spread, w.spread);
       d.normalize();
-      const hit = traceShot(game, origin, d, w.range, a, null);
+      const hit = traceShot(game, origin, d, w.range, a, car);
       const hx = origin.x + d.x * hit.t;
       const hy = origin.y + d.y * hit.t;
       const hz = origin.z + d.z * hit.t;
@@ -164,7 +167,7 @@ export function createCombat(game) {
         game.effects.sparks(hx, hy, hz, 4);
       } else if (hit.t < w.range) game.effects.impact(hx, hy, hz);
     }
-    a.heading = Math.atan2(base.x, base.z);
+    if (!car) a.heading = Math.atan2(base.x, base.z);
     game.effects.muzzle(hand.x, hand.y, hand.z);
     game.audio.gunshot(w.id, a.x, a.z);
     game.cameraShake(w.id === 'shotgun' ? 0.25 : 0.06);

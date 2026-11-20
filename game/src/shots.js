@@ -126,10 +126,27 @@ function mapScene(game, menus) {
   menus.openPause();
 }
 
+/** On foot on an Old Town sidewalk among the crowd, at a given hour. */
+function streetScene(game, hour) {
+  game.newGame();
+  game.missions.reset();
+  game.hour = hour;
+  const a = game.player.actor;
+  a.x = nodeCoord(3) + 10;
+  a.z = nodeCoord(6) + 5;
+  for (let i = 0; i < 20; i += 1) game.peds.update(0.5);
+  run(game, 3);
+  game.camRig.yaw = 0.6;
+  game.camRig.pitch = 0.12;
+  game.camRig.snap(a, null);
+}
+
 export async function stageShot(name, game, menus) {
   if (name === 'title') titleScene(game, menus);
   else if (name === 'combat') combatScene(game);
   else if (name === 'map') mapScene(game, menus);
+  else if (name === 'street') streetScene(game, 11);
+  else if (name === 'night') streetScene(game, 21.5);
   else chaseScene(game);
   if (name !== 'title') {
     menus.hideTitle();

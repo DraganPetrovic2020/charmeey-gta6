@@ -48,7 +48,7 @@ function assignStroll(a, block) {
   a.state = 'walk';
 }
 
-export function spawnPedestrian(game, minDist = POPULATION.spawnNear * 0.6, maxDist = POPULATION.spawnFar * 0.8) {
+export function spawnPedestrian(game, minDist = 22, maxDist = POPULATION.spawnFar * 0.8) {
   const p = game.player.actor;
   for (let tries = 0; tries < 12; tries += 1) {
     const block = rand.pick(game.map.blocks);

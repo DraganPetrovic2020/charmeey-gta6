@@ -320,6 +320,186 @@ function buildSigns(map, group, nightMaterials) {
   }
 }
 
+/** Warm pools of light on the pavement under each street lamp, seen only after dark. */
+function buildLightPools(map, group) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,214,140,0.9)');
+  g.addColorStop(0.45, 'rgba(255,180,90,0.35)');
+  g.addColorStop(1, 'rgba(255,160,60,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 128);
+  const texture = new THREE.CanvasTexture(c);
+  const geometry = new THREE.PlaneGeometry(13, 13);
+  geometry.rotateX(-Math.PI / 2);
+  const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, polygonOffset: true, polygonOffsetFactor: -4 });
+  const mesh = new THREE.InstancedMesh(geometry, material, map.lamps.length);
+  const m = new THREE.Matrix4();
+  const cx = CITY.size / 2;
+  map.lamps.forEach((lamp, i) => {
+    const a = Math.atan2(cx - lamp.x, cx - lamp.z) + Math.PI;
+    m.makeTranslation(lamp.x + Math.sin(a) * 1.6, 0.21, lamp.z + Math.cos(a) * 1.6);
+    mesh.setMatrixAt(i, m);
+  });
+  mesh.renderOrder = 2;
+  group.add(mesh);
+  return material;
+}
+
+/** A traffic light on two corners of every intersection, reaching out over the road. */
+function buildTrafficLights(group) {
+  const pole = new THREE.CylinderGeometry(0.1, 0.12, 5.2, 6);
+  pole.translate(0, 2.6, 0);
+  const arm = new THREE.BoxGeometry(0.12, 0.12, 4.2);
+  arm.translate(0, 5.1, 2.1);
+  const box = new THREE.BoxGeometry(0.4, 1.1, 0.35);
+  box.translate(0, 4.5, 3.9);
+  const lamp = new THREE.BoxGeometry(0.22, 0.22, 0.05);
+  lamp.translate(0, 4.82, 4.08);
+  const spots = [];
+  const half = CITY.road / 2 + 1;
+  for (let i = 0; i <= CITY.blocks; i += 1) {
+    for (let j = 0; j <= CITY.blocks; j += 1) {
+      const x = nodeCoord(i);
+      const z = nodeCoord(j);
+      spots.push([x + half, z - half, -Math.PI / 2], [x - half, z + half, Math.PI / 2]);
+    }
+  }
+  const dark = new THREE.MeshStandardMaterial({ color: 0x2b2f33, roughness: 0.6, metalness: 0.4 });
+  const poles = new THREE.InstancedMesh(pole, dark, spots.length);
+  const arms = new THREE.InstancedMesh(arm, dark, spots.length);
+  const boxes = new THREE.InstancedMesh(box, new THREE.MeshStandardMaterial({ color: 0x1c1f22, roughness: 0.5 }), spots.length);
+  const lamps = new THREE.InstancedMesh(lamp, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.6 }), spots.length);
+  const m = new THREE.Matrix4();
+  const colour = new THREE.Color();
+  spots.forEach(([x, z, r], k) => {
+    m.makeRotationY(r);
+    m.setPosition(x, 0, z);
+    poles.setMatrixAt(k, m);
+    arms.setMatrixAt(k, m);
+    boxes.setMatrixAt(k, m);
+    lamps.setMatrixAt(k, m);
+    lamps.setColorAt(k, colour.set(k % 3 === 0 ? 0xff3030 : k % 3 === 1 ? 0x30ff6a : 0xffc020));
+  });
+  poles.castShadow = arms.castShadow = boxes.castShadow = true;
+  group.add(poles, arms, boxes, lamps);
+}
+
+/** The city's own brands, painted onto rooftop billboards. */
+const ADS = [
+  ['PALMERA COLA', 'ice cold since 1962', '#e63946', '#fff3e0'],
+  ['SUNWAVE FM 88.4', 'the sound of the Keys', '#7b2cbf', '#ffd6ff'],
+  ['KROLL LIVING', 'luxury condos from $2.9M', '#1d3557', '#f1c27d'],
+  ['COCO LOCO RUM', 'stay a little longer', '#2a9d8f', '#fff1c1'],
+  ['VORTEX GT', 'feel the heat', '#111111', '#ff3d6e'],
+  ['FLAMINGO BOWL', 'open late, every night', '#ff70a6', '#ffffff'],
+  ['BAYVIEW MEDICAL', 'we never close', '#ffffff', '#d62828'],
+];
+
+function adTexture([title, line, bg, fg]) {
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 192;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 512, 192);
+  ctx.fillStyle = fg;
+  ctx.globalAlpha = 0.18;
+  for (let i = -192; i < 512; i += 40) {
+    ctx.beginPath();
+    ctx.moveTo(i, 192);
+    ctx.lineTo(i + 192, 0);
+    ctx.lineTo(i + 212, 0);
+    ctx.lineTo(i + 20, 192);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'center';
+  ctx.font = 'italic 900 70px "Arial Black", Impact, sans-serif';
+  ctx.fillText(title, 256, 104, 480);
+  ctx.font = 'bold 30px "Trebuchet MS", sans-serif';
+  ctx.fillText(line, 256, 152, 470);
+  ctx.strokeStyle = fg;
+  ctx.lineWidth = 8;
+  ctx.strokeRect(4, 4, 504, 184);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+/** Billboards on a share of the low and mid-rise roofs. */
+function buildBillboards(map, group, nightMaterials) {
+  const rng = createRandom(404);
+  const byAd = ADS.map(() => []);
+  for (const b of map.buildings) {
+    if (b.h > 45 || b.style === 'house' || !rng.chance(0.22)) continue;
+    const w = Math.min(14, b.x1 - b.x0 - 2);
+    if (w < 7) continue;
+    byAd[rng.int(0, ADS.length - 1)].push({ x: (b.x0 + b.x1) / 2, y: b.h, z: rng.chance(0.5) ? b.z0 + 1 : b.z1 - 1, w, flip: rng.chance(0.5) });
+  }
+  const board = new THREE.PlaneGeometry(1, 0.375);
+  const legs = new MeshBuilder();
+  const up = new THREE.Vector3(0, 1, 0);
+  ADS.forEach((ad, k) => {
+    const list = byAd[k];
+    if (!list.length) return;
+    const material = new THREE.MeshStandardMaterial({ map: adTexture(ad), side: THREE.DoubleSide, roughness: 0.7, emissive: 0xffffff, emissiveIntensity: 0.1 });
+    material.emissiveMap = material.map;
+    nightMaterials.push(material);
+    const mesh = new THREE.InstancedMesh(board, material, list.length);
+    const m = new THREE.Matrix4();
+    const q = new THREE.Quaternion();
+    list.forEach((s, i) => {
+      q.setFromAxisAngle(up, s.flip ? Math.PI : 0);
+      m.compose(new THREE.Vector3(s.x, s.y + 2.2 + (s.w * 0.375) / 2, s.z), q, new THREE.Vector3(s.w, s.w, 1));
+      mesh.setMatrixAt(i, m);
+      legs.box(s.x - s.w * 0.35, s.y, s.z - 0.12, s.x - s.w * 0.35 + 0.25, s.y + 2.3, s.z + 0.12, 0x3b3f45);
+      legs.box(s.x + s.w * 0.35 - 0.25, s.y, s.z - 0.12, s.x + s.w * 0.35, s.y + 2.3, s.z + 0.12, 0x3b3f45);
+    });
+    mesh.castShadow = true;
+    group.add(mesh);
+  });
+  group.add(new THREE.Mesh(legs.build(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 })));
+}
+
+/** Benches and bins along the sidewalks. */
+function buildStreetFurniture(map, group) {
+  const rng = createRandom(515);
+  const b = new MeshBuilder();
+  for (const block of map.blocks) {
+    for (let k = 0; k < 3; k += 1) {
+      const side = rng.int(0, 3);
+      const t = rng.range(0.2, 0.8);
+      const inset = CITY.sidewalk - 0.6;
+      let x = block.x0 + (block.x1 - block.x0) * t;
+      let z = block.z0 + (block.z1 - block.z0) * t;
+      if (side === 0) z = block.z0 + inset;
+      if (side === 1) z = block.z1 - inset;
+      if (side === 2) x = block.x0 + inset;
+      if (side === 3) x = block.x1 - inset;
+      if (rng.chance(0.6)) {
+        // A bench: seat and back along the curb, on two legs.
+        const along = side < 2;
+        const [w, d] = along ? [1.8, 0.5] : [0.5, 1.8];
+        b.box(x - w / 2, 0.45, z - d / 2, x + w / 2, 0.55, z + d / 2, 0x8d6e4f, [0.5, 0.5]);
+        const back = side === 0 || side === 2 ? 0.2 : -0.25;
+        if (along) b.box(x - w / 2, 0.55, z + back, x + w / 2, 1.0, z + back + 0.05, 0x8d6e4f, [0.5, 0.5]);
+        else b.box(x + back, 0.55, z - d / 2, x + back + 0.05, 1.0, z + d / 2, 0x8d6e4f, [0.5, 0.5]);
+        b.box(x - 0.6, 0.15, z - 0.2, x - 0.5, 0.45, z + 0.2, 0x333333, [0.5, 0.5]);
+        b.box(x + 0.5, 0.15, z - 0.2, x + 0.6, 0.45, z + 0.2, 0x333333, [0.5, 0.5]);
+      } else {
+        b.box(x - 0.3, 0.15, z - 0.3, x + 0.3, 1.05, z + 0.3, rng.pick([0x2a9d8f, 0x3a5a40, 0x264653]), [0.5, 0.5]);
+      }
+    }
+  }
+  const mesh = new THREE.Mesh(b.build(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 }));
+  mesh.castShadow = true;
+  group.add(mesh);
+}
+
 /** Builds the whole static city into one group; returns it with the materials night lights. */
 export function buildCity(map, tex) {
   const group = new THREE.Group();
@@ -333,5 +513,9 @@ export function buildCity(map, tex) {
   buildPools(map, group);
   buildUmbrellas(group);
   buildSigns(map, group, nightMaterials);
-  return { group, nightMaterials, lampMaterial, water };
+  const poolMaterial = buildLightPools(map, group);
+  buildTrafficLights(group);
+  buildBillboards(map, group, nightMaterials);
+  buildStreetFurniture(map, group);
+  return { group, nightMaterials, lampMaterial, poolMaterial, water };
 }

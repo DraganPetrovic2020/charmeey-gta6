@@ -371,6 +371,8 @@ export function createMissions(game) {
     st.cooldown = 4;
     game.saveGame(true);
     refreshGiver();
+    const next = MISSIONS[game.progress.mission];
+    if (next) setTimeout(() => game.hud.toast(`New mission: ${next.title} (pink marker on the radar)`, 'tape'), 4000);
   }
 
   function fail(reason) {
