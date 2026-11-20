@@ -23,7 +23,7 @@ import { createActivities } from './activities.js';
 import { createEvents } from './events.js';
 import { createCameraRig } from './camera.js';
 import { createPlayer, exitVehicle } from './player.js';
-import { removeVehicle, updateVehicles } from './vehicles.js';
+import { removeVehicle, spawnVehicle, updateVehicles } from './vehicles.js';
 import { checkVehicleHits, damageActor, removeActor, updateActorBodies } from './characters.js';
 import { updateTraffic, panicTraffic } from './traffic.js';
 import { updateGangMember } from './gangs.js';
@@ -165,6 +165,10 @@ export function createGame(canvas, input) {
     game.hour = START_HOUR;
     const start = map.places.busStation;
     game.resetWorld(start.x, start.z, -Math.PI / 2);
+    // An unlocked sedan waits at the depot curb for Nico's first ride.
+    const curb = start.curb;
+    const ride = spawnVehicle(game, 'brava', curb.x - 1.6, curb.z + 9, 0, { driver: null, color: 0x2f4f6f });
+    ride.parked = true;
   };
 
   game.loadGame = (save) => {

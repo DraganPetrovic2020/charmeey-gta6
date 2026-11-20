@@ -126,7 +126,8 @@ function driveStep(v, dt) {
   const grip = handbrake > 0 ? s.grip * 0.16 : s.grip;
   vr *= Math.exp(-grip * dt);
 
-  const targetSteer = (c.steer * 0.62) / (1 + Math.abs(vf) * 0.04);
+  // Less steering lock the faster the car goes, so it stays planted at speed.
+  const targetSteer = (c.steer * 0.6) / (1 + Math.abs(vf) * 0.085);
   v.steer += (targetSteer - v.steer) * Math.min(1, 9 * dt);
   const wheelbase = s.length * 0.62;
   let yaw = (vf * Math.tan(v.steer)) / wheelbase;
